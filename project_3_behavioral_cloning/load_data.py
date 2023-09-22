@@ -19,7 +19,7 @@ def split_train_val(csv_driving_data, test_size=0.2):
     """
     with open(csv_driving_data, 'r') as f:
         reader = csv.reader(f)
-        driving_data = [row for row in reader][1:]
+        driving_data = list(reader)[1:]
 
     train_data, val_data = train_test_split(driving_data, test_size=test_size, random_state=1)
 
@@ -123,9 +123,7 @@ def load_data_batch(data, batchsize=CONFIG['batchsize'], data_dir='data', augmen
 
         # check that each element in the batch meet the condition
         steer_magnitude_thresh = np.random.rand()
-        if (abs(steer) + bias) < steer_magnitude_thresh:
-            pass  # discard this element
-        else:
+        if abs(steer) + bias >= steer_magnitude_thresh:
             X[loaded_elements] = frame
             y_steer[loaded_elements] = steer
             loaded_elements += 1

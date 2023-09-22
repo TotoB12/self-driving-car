@@ -51,7 +51,7 @@ def process_pipeline(frame, verbose=False):
 
     # create list of thumbnails s.t. this can be later sorted for drawing
     vehicle_thumbs = []
-    for i, vehicle in enumerate(detected_vehicles):
+    for vehicle in detected_vehicles:
         x_min, y_min, x_max, y_max = vehicle.coords
         vehicle_thumbs.append(frame[y_min:y_max, x_min:x_max, :])
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
             frame_out = process_pipeline(frame, verbose=False)
 
-            cv2.imwrite('output_images/{}'.format(test_img), frame_out)
+            cv2.imwrite(f'output_images/{test_img}', frame_out)
 
 
 

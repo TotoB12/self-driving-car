@@ -34,9 +34,15 @@ def hough_lines_detection(img, rho, theta, threshold, min_line_len, max_line_gap
     """
     `img` should be the output of a Canny transform.
     """
-    lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len,
-                            maxLineGap=max_line_gap)
-    return lines
+    return cv2.HoughLinesP(
+        img,
+        rho,
+        theta,
+        threshold,
+        np.array([]),
+        minLineLength=min_line_len,
+        maxLineGap=max_line_gap,
+    )
 
 
 def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
@@ -114,20 +120,15 @@ def get_lane_lines(color_image, solid_lines=True):
     # convert (x1, y1, x2, y2) tuples into Lines
     detected_lines = [Line(l[0][0], l[0][1], l[0][2], l[0][3]) for l in detected_lines]
 
-    # if 'solid_lines' infer the two lane lines
-    if solid_lines:
-        candidate_lines = []
-        for line in detected_lines:
-                # consider only lines with slope between 30 and 60 degrees
-                if 0.5 <= np.abs(line.slope) <= 2:
-                    candidate_lines.append(line)
-        # interpolate lines candidates to find both lanes
-        lane_lines = compute_lane_from_candidates(candidate_lines, img_gray.shape)
-    else:
+    if not solid_lines:
         # if not solid_lines, just return the hough transform output
-        lane_lines = detected_lines
+        return detected_lines
 
-    return lane_lines
+    candidate_lines = [
+        line for line in detected_lines if 0.5 <= np.abs(line.slope) <= 2
+    ]
+        # interpolate lines candidates to find both lanes
+    return compute_lane_from_candidates(candidate_lines, img_gray.shape)
 
 
 def smoothen_over_time(lane_lines):
@@ -181,6 +182,4 @@ def color_frame_pipeline(frames, solid_lines=True, temporal_smoothing=True):
 
     # make blend on color image
     img_color = frames[-1] if is_videoclip else frames[0]
-    img_blend = weighted_img(img_masked, img_color, α=0.8, β=1., λ=0.)
-
-    return img_blend
+    return weighted_img(img_masked, img_color, α=0.8, β=1., λ=0.)

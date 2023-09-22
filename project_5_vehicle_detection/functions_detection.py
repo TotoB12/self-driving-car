@@ -59,13 +59,10 @@ def compute_windows_multiscale(image, verbose=False):
     """
     h, w, c = image.shape
 
-    windows_multiscale = []
-
     windows_32 = slide_window(image, x_start_stop=[None, None],
                               y_start_stop=[4 * h // 8, 5 * h // 8],
                               xy_window=(32, 32), xy_overlap=(0.8, 0.8))
-    windows_multiscale.append(windows_32)
-
+    windows_multiscale = [windows_32]
     windows_64 = slide_window(image, x_start_stop=[None, None],
                               y_start_stop=[4 * h // 8, 6 * h // 8],
                               xy_window=(64, 64), xy_overlap=(0.8, 0.8))

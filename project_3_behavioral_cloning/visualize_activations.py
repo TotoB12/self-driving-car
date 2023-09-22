@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     with open('data/driving_log.csv', 'r') as f:
         reader = csv.reader(f)
-        driving_data = [row for row in reader][1:]
+        driving_data = list(reader)[1:]
 
     # load model architecture
     json_path = 'logs/model.json'
@@ -44,7 +44,7 @@ if __name__ == '__main__':
 
     # load model weights
     weights_path = os.path.join('checkpoints', os.listdir('checkpoints')[-1])
-    print('Loading weights: {}'.format(weights_path))
+    print(f'Loading weights: {weights_path}')
     model.load_weights(weights_path)
 
     first_ELU = Model(input=model.layers[0].input, output=model.layers[3].output)

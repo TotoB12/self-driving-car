@@ -26,15 +26,15 @@ def maybe_download_pretrained_vgg(data_dir):
     Download and extract pretrained vgg model if it doesn't exist
     :param data_dir: Directory to download the model to
     """
-    vgg_filename = 'vgg.zip'
     vgg_path = os.path.join(data_dir, 'vgg')
     vgg_files = [
         os.path.join(vgg_path, 'variables/variables.data-00000-of-00001'),
         os.path.join(vgg_path, 'variables/variables.index'),
         os.path.join(vgg_path, 'saved_model.pb')]
 
-    missing_vgg_files = [vgg_file for vgg_file in vgg_files if not os.path.exists(vgg_file)]
-    if missing_vgg_files:
+    if missing_vgg_files := [
+        vgg_file for vgg_file in vgg_files if not os.path.exists(vgg_file)
+    ]:
         # Clean vgg dir
         if os.path.exists(vgg_path):
             shutil.rmtree(vgg_path)
@@ -42,6 +42,7 @@ def maybe_download_pretrained_vgg(data_dir):
 
         # Download vgg
         print('Downloading pre-trained vgg model...')
+        vgg_filename = 'vgg.zip'
         with DLProgress(unit='B', unit_scale=True, miniters=1) as pbar:
             urlretrieve(
                 'https://s3-us-west-1.amazonaws.com/udacity-selfdrivingcar/vgg.zip',
@@ -133,7 +134,7 @@ def save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_p
     os.makedirs(output_dir)
 
     # Run NN on test images and save them to HD
-    print('Training Finished. Saving test images to: {}'.format(output_dir))
+    print(f'Training Finished. Saving test images to: {output_dir}')
     image_outputs = gen_test_output(
         sess, logits, keep_prob, input_image, os.path.join(data_dir, 'data_road/testing'), image_shape)
     for name, image in image_outputs:

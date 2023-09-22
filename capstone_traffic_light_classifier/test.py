@@ -93,5 +93,5 @@ if __name__ == '__main__':
 
             # Display result
             image = cv2.resize(image, (256, 256))
-            cv2.imshow('PRED {} GT {}'.format(prediction[b], y_batch[b]), image)
+            cv2.imshow(f'PRED {prediction[b]} GT {y_batch[b]}', image)
             cv2.waitKey()

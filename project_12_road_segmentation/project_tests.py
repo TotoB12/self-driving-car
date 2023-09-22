@@ -28,14 +28,17 @@ def _prevent_print(function, params):
 
 
 def _assert_tensor_shape(tensor, shape, display_name):
-    assert tf.assert_rank(tensor, len(shape), message='{} has wrong rank'.format(display_name))
+    assert tf.assert_rank(
+        tensor, len(shape), message=f'{display_name} has wrong rank'
+    )
 
     tensor_shape = tensor.get_shape().as_list() if len(shape) else []
 
     wrong_dimension = [ten_dim for ten_dim, cor_dim in zip(tensor_shape, shape)
                        if cor_dim is not None and ten_dim != cor_dim]
-    assert not wrong_dimension, \
-        '{} has wrong shape.  Found {}'.format(display_name, tensor_shape)
+    assert (
+        not wrong_dimension
+    ), f'{display_name} has wrong shape.  Found {tensor_shape}'
 
 
 class TmpMock(object):
@@ -147,8 +150,18 @@ def test_for_kitti_dataset(data_dir):
     training_images_count = len(glob(os.path.join(kitti_dataset_path, 'training/image_2/*.png')))
     testing_images_count = len(glob(os.path.join(kitti_dataset_path, 'testing/image_2/*.png')))
 
-    assert not (training_images_count == training_labels_count == testing_images_count == 0),\
-        'Kitti dataset not found. Extract Kitti dataset in {}'.format(kitti_dataset_path)
-    assert training_images_count == 289, 'Expected 289 training images, found {} images.'.format(training_images_count)
-    assert training_labels_count == 289, 'Expected 289 training labels, found {} labels.'.format(training_labels_count)
-    assert testing_images_count == 290, 'Expected 290 testing images, found {} images.'.format(testing_images_count)
+    assert not (
+        training_images_count
+        == training_labels_count
+        == testing_images_count
+        == 0
+    ), f'Kitti dataset not found. Extract Kitti dataset in {kitti_dataset_path}'
+    assert (
+        training_images_count == 289
+    ), f'Expected 289 training images, found {training_images_count} images.'
+    assert (
+        training_labels_count == 289
+    ), f'Expected 289 training labels, found {training_labels_count} labels.'
+    assert (
+        testing_images_count == 290
+    ), f'Expected 290 testing images, found {testing_images_count} images.'

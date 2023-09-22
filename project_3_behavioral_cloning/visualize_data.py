@@ -54,25 +54,27 @@ if __name__ == '__main__':
     for i in range(len(train_data)):
         central_frame = cv2.imread(path.join('data', train_data[i][0]))
         steering = np.float32(train_data[i][3])
-        if train_data[i][0] == 'IMG/center_2016_12_01_13_34_43_116.jpg'\
-            or train_data[i][0] == 'IMG/center_2016_12_01_13_46_20_434.jpg'\
-                or train_data[i][0] == 'IMG/center_2016_12_01_13_39_48_531.jpg':
+        if train_data[i][0] in [
+            'IMG/center_2016_12_01_13_34_43_116.jpg',
+            'IMG/center_2016_12_01_13_46_20_434.jpg',
+            'IMG/center_2016_12_01_13_39_48_531.jpg',
+        ]:
 
             plt.close('all')
             proc_frame = preprocess(central_frame)
             plt.imshow(cv2.cvtColor(proc_frame.astype(np.uint8), code=cv2.COLOR_BGR2RGB))
-            print('{}'.format(train_data[i][0]))
+            print(f'{train_data[i][0]}')
             plt.title('Steering: {:03f}'.format(steering))
             plt.gca().set_axis_off()
-            filename = path.join('.', '{}.png'.format(train_data[i][0]))
+            filename = path.join('.', f'{train_data[i][0]}.png')
             plt.savefig(filename, facecolor='white', bbox_inches='tight')
 
             plt.close('all')
             plt.imshow(cv2.cvtColor(central_frame, code=cv2.COLOR_BGR2RGB))
-            print('{}'.format(train_data[i][0]))
+            print(f'{train_data[i][0]}')
             plt.title('Steering: {:03f}'.format(steering))
             plt.gca().set_axis_off()
-            filename = path.join('.', '{}'.format(train_data[i][0]))
+            filename = path.join('.', f'{train_data[i][0]}')
             plt.savefig(filename, facecolor='white', bbox_inches='tight')
 
 

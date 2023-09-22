@@ -48,12 +48,7 @@ class Vehicle:
         dx = min(self.x_max, rect.x_max) - max(self.x_min, rect.x_min)
         dy = min(self.y_max, rect.y_max) - max(self.y_min, rect.y_min)
 
-        if dx >= 0 and dy >= 0:
-            intersection = dx * dy
-        else:
-            intersection = 0.
-
-        return intersection
+        return dx * dy if dx >= 0 and dy >= 0 else 0.
 
     def resize_sides(self, ratio, bounds=None):
         """
@@ -138,10 +133,7 @@ class Vehicle:
 
     def contains(self, x, y):
 
-        if self.x_min < x < self.x_max and self.y_min < y < self.y_max:
-            return True
-        else:
-            return False
+        return self.x_min < x < self.x_max and self.y_min < y < self.y_max
 
     @property
     def center(self):

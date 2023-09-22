@@ -96,7 +96,7 @@ def save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_p
     os.makedirs(output_dir)
 
     # Run NN on test images and save them to HD
-    print('Training Finished. Saving test images to: {}'.format(output_dir))
+    print(f'Training Finished. Saving test images to: {output_dir}')
     image_outputs = gen_test_output(
         sess, logits, keep_prob, input_image, os.path.join(data_dir, 'data_road/testing'), image_shape)
     for name, image in image_outputs:
@@ -104,14 +104,16 @@ def save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_p
 
 
 # Check TensorFlow Version
-assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
-print('TensorFlow Version: {}'.format(tf.__version__))
+assert LooseVersion(tf.__version__) >= LooseVersion(
+    '1.0'
+), f'Please use TensorFlow version 1.0 or newer.  You are using {tf.__version__}'
+print(f'TensorFlow Version: {tf.__version__}')
 
 # Check for a GPU
 if not tf.test.gpu_device_name():
     warnings.warn('No GPU found. Please use a GPU to train your neural network.')
 else:
-    print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
+    print(f'Default GPU Device: {tf.test.gpu_device_name()}')
 
 
 def load_vgg(sess, vgg_path):
@@ -171,10 +173,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     layer_4_7_fused_up = tf.image.resize_images(layer_4_7_fused, size=[20, 72])
     layer_3_4_7_fused = tf.add(layer3_logits, layer_4_7_fused_up)
 
-    # resize to original size
-    layer_3_4_7_up = tf.image.resize_images(layer_3_4_7_fused, size=[160, 576])
-
-    return layer_3_4_7_up
+    return tf.image.resize_images(layer_3_4_7_fused, size=[160, 576])
 
 
 def optimize(net_prediction, labels, learning_rate, num_classes):
@@ -226,8 +225,7 @@ def train_nn(sess, training_epochs, batch_size, get_batches_fn, train_op, cross_
 
         loss_this_epoch = 0.0
 
-        for i in range(0, examples_each_epoch):
-
+        for _ in range(0, examples_each_epoch):
             # Load a batch of examples
             batch_x, batch_y = next(get_batches_fn(batch_size))
 
