@@ -82,11 +82,9 @@ def compute_offset_from_center(line_lt, line_rt, frame_width):
         lane_width = line_rt_bottom - line_lt_bottom
         midpoint = frame_width / 2
         offset_pix = abs((line_lt_bottom + lane_width / 2) - midpoint)
-        offset_meter = xm_per_pix * offset_pix
+        return xm_per_pix * offset_pix
     else:
-        offset_meter = -1
-
-    return offset_meter
+        return -1
 
 
 def process_pipeline(frame, keep_state=True):
@@ -138,8 +136,8 @@ if __name__ == '__main__':
     if mode == 'video':
 
         selector = 'project'
-        clip = VideoFileClip('{}_video.mp4'.format(selector)).fl_image(process_pipeline)
-        clip.write_videofile('out_{}_{}.mp4'.format(selector, time_window), audio=False)
+        clip = VideoFileClip(f'{selector}_video.mp4').fl_image(process_pipeline)
+        clip.write_videofile(f'out_{selector}_{time_window}.mp4', audio=False)
 
     else:
 
@@ -150,7 +148,7 @@ if __name__ == '__main__':
 
             blend = process_pipeline(frame, keep_state=False)
 
-            cv2.imwrite('output_images/{}'.format(test_img), blend)
+            cv2.imwrite(f'output_images/{test_img}', blend)
 
             plt.imshow(cv2.cvtColor(blend, code=cv2.COLOR_BGR2RGB))
             plt.show()

@@ -23,7 +23,7 @@ def get_file_list_recursively(top_directory):
         List of files found under top_directory (with full path)
     """
     if not exists(top_directory):
-        raise ValueError('Directory "{}" does NOT exist.'.format(top_directory))
+        raise ValueError(f'Directory "{top_directory}" does NOT exist.')
 
     file_list = []
 
@@ -67,10 +67,10 @@ def stitch_together(input_images, layout, resize_dim=None, off_x=None, off_y=Non
         Stitch of input images
     """
 
-    if len(set([img.shape for img in input_images])) > 1:
+    if len({img.shape for img in input_images}) > 1:
         raise ValueError('All images must have the same shape')
 
-    if len(set([img.dtype for img in input_images])) > 1:
+    if len({img.dtype for img in input_images}) > 1:
         raise ValueError('All images must have the same data type')
 
     # determine if input images are color (3 channels) or grayscale (single channel)
@@ -167,12 +167,7 @@ class Rectangle:
         dx = min(self.x_max, rect.x_max) - max(self.x_min, rect.x_min)
         dy = min(self.y_max, rect.y_max) - max(self.y_min, rect.y_min)
 
-        if dx >= 0 and dy >= 0:
-            intersection = dx * dy
-        else:
-            intersection = 0.
-
-        return intersection
+        return dx * dy if dx >= 0 and dy >= 0 else 0.
 
     def resize_sides(self, ratio, bounds=None):
         """

@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     for test_img in test_images:
 
-        print('Processing image: {}'.format(test_img))
+        print(f'Processing image: {test_img}')
 
         out_path = join('out', 'images', basename(test_img))
         in_image = cv2.cvtColor(cv2.imread(test_img, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     for test_video in test_videos:
 
-        print('Processing video: {}'.format(test_video))
+        print(f'Processing video: {test_video}')
 
         cap = cv2.VideoCapture(test_video)
         out = cv2.VideoWriter(join('out', 'videos', basename(test_video)),
@@ -49,15 +49,14 @@ if __name__ == '__main__':
         frame_buffer = deque(maxlen=10)
         while cap.isOpened():
             ret, color_frame = cap.read()
-            if ret:
-                color_frame = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
-                color_frame = cv2.resize(color_frame, (resize_w, resize_h))
-                frame_buffer.append(color_frame)
-                blend_frame = color_frame_pipeline(frames=frame_buffer, solid_lines=True, temporal_smoothing=True)
-                out.write(cv2.cvtColor(blend_frame, cv2.COLOR_RGB2BGR))
-                cv2.imshow('blend', cv2.cvtColor(blend_frame, cv2.COLOR_RGB2BGR)), cv2.waitKey(1)
-            else:
+            if not ret:
                 break
+            color_frame = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
+            color_frame = cv2.resize(color_frame, (resize_w, resize_h))
+            frame_buffer.append(color_frame)
+            blend_frame = color_frame_pipeline(frames=frame_buffer, solid_lines=True, temporal_smoothing=True)
+            out.write(cv2.cvtColor(blend_frame, cv2.COLOR_RGB2BGR))
+            cv2.imshow('blend', cv2.cvtColor(blend_frame, cv2.COLOR_RGB2BGR)), cv2.waitKey(1)
         cap.release()
         out.release()
         cv2.destroyAllWindows()

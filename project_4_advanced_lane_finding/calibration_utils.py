@@ -38,7 +38,9 @@ def calibrate_camera(calib_images_dir, verbose=False):
     :return: calibration parameters
     """
 
-    assert path.exists(calib_images_dir), '"{}" must exist and contain calibration images.'.format(calib_images_dir)
+    assert path.exists(
+        calib_images_dir
+    ), f'"{calib_images_dir}" must exist and contain calibration images.'
 
     # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
     objp = np.zeros((6 * 9, 3), np.float32)

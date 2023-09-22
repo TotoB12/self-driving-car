@@ -82,9 +82,10 @@ class TrafficLightDataset:
 
         color2label = {'none': 0, 'red': 1, 'yellow': 2, 'green': 3}
 
-        statistics = {}
-        for (color, num_label) in color2label.items():
-            statistics[color] = np.sum(self.dataset_npy[:, 1] == num_label)
+        statistics = {
+            color: np.sum(self.dataset_npy[:, 1] == num_label)
+            for color, num_label in color2label.items()
+        }
         print(statistics)
 
     @staticmethod

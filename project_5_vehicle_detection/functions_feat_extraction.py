@@ -8,20 +8,22 @@ def get_hog_features(img, orient, pix_per_cell, cell_per_block, verbose=False, f
     Return hog features for a given image patch `img`.
     If `verbose==True`, a visualization of the features is also returned.
     """
-    if verbose:
-        features, hog_image = hog(img, orientations=orient,
-                                  pixels_per_cell=(pix_per_cell, pix_per_cell),
-                                  cells_per_block=(cell_per_block, cell_per_block),
-                                  transform_sqrt=True,
-                                  visualise=verbose, feature_vector=feature_vec)
-        return features, hog_image
-    else:
-        features = hog(img, orientations=orient,
-                       pixels_per_cell=(pix_per_cell, pix_per_cell),
-                       cells_per_block=(cell_per_block, cell_per_block),
-                       transform_sqrt=True,
-                       visualise=verbose, feature_vector=feature_vec)
-        return features
+    if not verbose:
+        return hog(
+            img,
+            orientations=orient,
+            pixels_per_cell=(pix_per_cell, pix_per_cell),
+            cells_per_block=(cell_per_block, cell_per_block),
+            transform_sqrt=True,
+            visualise=verbose,
+            feature_vector=feature_vec,
+        )
+    features, hog_image = hog(img, orientations=orient,
+                              pixels_per_cell=(pix_per_cell, pix_per_cell),
+                              cells_per_block=(cell_per_block, cell_per_block),
+                              transform_sqrt=True,
+                              visualise=verbose, feature_vector=feature_vec)
+    return features, hog_image
 
 
 def bin_spatial(img, size=(32, 32)):
@@ -29,8 +31,7 @@ def bin_spatial(img, size=(32, 32)):
     Return binned color features.
     This is just the resized image, unrolled in a feature vector.
     """
-    features = cv2.resize(img, size).ravel()
-    return features
+    return cv2.resize(img, size).ravel()
 
 
 def color_hist(img, nbins=32, bins_range=(0, 256)):
@@ -43,9 +44,7 @@ def color_hist(img, nbins=32, bins_range=(0, 256)):
     channel1_hist = np.histogram(img[:, :, 0], bins=nbins, range=bins_range)
     channel2_hist = np.histogram(img[:, :, 1], bins=nbins, range=bins_range)
     channel3_hist = np.histogram(img[:, :, 2], bins=nbins, range=bins_range)
-    # Concatenate the histograms into a single feature vector
-    hist_features = np.concatenate((channel1_hist[0], channel2_hist[0], channel3_hist[0]))
-    return hist_features
+    return np.concatenate((channel1_hist[0], channel2_hist[0], channel3_hist[0]))
 
 
 def image_to_features(image, feat_extraction_params):
@@ -79,20 +78,19 @@ def image_to_features(image, feat_extraction_params):
     image_features = []
 
     # apply color conversion if other than 'RGB'
-    if color_space != 'RGB':
-        if color_space == 'HSV':
-            feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        elif color_space == 'LUV':
-            feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2LUV)
-        elif color_space == 'HLS':
-            feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-        elif color_space == 'YUV':
-            feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-        elif color_space == 'YCrCb':
-            feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
-    else:
+    if color_space == 'HLS':
+        feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
+    elif color_space == 'HSV':
+        feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    elif color_space == 'LUV':
+        feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2LUV)
+    elif color_space == 'RGB':
         feature_image = np.copy(image)
 
+    elif color_space == 'YCrCb':
+        feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
+    elif color_space == 'YUV':
+        feature_image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
     if spatial_feat:
         spatial_features = bin_spatial(feature_image, size=spatial_size)
         image_features.append(spatial_features)
@@ -103,11 +101,17 @@ def image_to_features(image, feat_extraction_params):
 
     if hog_feat:
         if hog_channel == 'ALL':
-            hog_features = []
-            for channel in range(feature_image.shape[2]):
-                hog_features.append(get_hog_features(feature_image[:, :, channel],
-                                                     orient, pix_per_cell, cell_per_block,
-                                                     verbose=False, feature_vec=True))
+            hog_features = [
+                get_hog_features(
+                    feature_image[:, :, channel],
+                    orient,
+                    pix_per_cell,
+                    cell_per_block,
+                    verbose=False,
+                    feature_vec=True,
+                )
+                for channel in range(feature_image.shape[2])
+            ]
             hog_features = np.ravel(hog_features)
         else:
             hog_features = get_hog_features(feature_image[:, :, hog_channel], orient,

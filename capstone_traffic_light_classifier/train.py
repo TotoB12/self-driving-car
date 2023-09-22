@@ -12,7 +12,7 @@ if __name__ == '__main__':
 
     # Init traffic light dataset
     dataset = TrafficLightDataset()
-    dataset_file = 'traffic_light_dataset_npy/traffic_light_dataset_mixed_resize_{}.npy'.format(input_h)
+    dataset_file = f'traffic_light_dataset_npy/traffic_light_dataset_mixed_resize_{input_h}.npy'
     dataset.init_from_npy(dataset_file)
 
     # Define model
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     # Checkpoint stuff
     saver = tf.train.Saver()  # saver to save the model after each epoch
-    checkpoint_dir = './checkpoint_mixed_{}'.format(input_h)  # checkpoint directory
+    checkpoint_dir = f'./checkpoint_mixed_{input_h}'
     if not exists(checkpoint_dir):
         makedirs(checkpoint_dir)
 
@@ -35,6 +35,7 @@ if __name__ == '__main__':
 
         epoch = 0
 
+        num_test_batches = 500
         while True:
 
             loss_cur_epoch = 0
@@ -57,7 +58,6 @@ if __name__ == '__main__':
 
             # Eventually evaluate on whole test set when training ends
             average_test_accuracy = 0.0
-            num_test_batches = 500
             for _ in range(num_test_batches):
                 x_batch, y_batch = dataset.load_batch(batch_size)
                 average_test_accuracy += sess.run(fetches=classifier.accuracy,
@@ -69,6 +69,6 @@ if __name__ == '__main__':
             print('*' * 50)
 
             # Save the variables to disk.
-            save_path = saver.save(sess, join(checkpoint_dir, 'TLC_epoch_{}.ckpt'.format(epoch)))
+            save_path = saver.save(sess, join(checkpoint_dir, f'TLC_epoch_{epoch}.ckpt'))
 
             epoch += 1

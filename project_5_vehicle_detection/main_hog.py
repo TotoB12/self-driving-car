@@ -91,13 +91,13 @@ if __name__ == '__main__':
     for test_img in os.listdir(test_img_dir):
 
         t = time.time()
-        print('Processing image {}...'.format(test_img), end="")
+        print(f'Processing image {test_img}...', end="")
 
         frame = cv2.imread(os.path.join(test_img_dir, test_img))
 
         frame_out = process_pipeline(frame, svc, feature_scaler, feat_extraction_params, keep_state=False, verbose=False)
 
-        cv2.imwrite('output_images/{}'.format(test_img), frame_out)
+        cv2.imwrite(f'output_images/{test_img}', frame_out)
 
         print('Done. Elapsed: {:.02f}'.format(time.time()-t))
 

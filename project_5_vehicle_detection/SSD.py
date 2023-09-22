@@ -106,9 +106,7 @@ class BBoxUtility(object):
         area_gt = (self.priors[:, 2] - self.priors[:, 0])
         area_gt *= (self.priors[:, 3] - self.priors[:, 1])
         union = area_pred + area_gt - inter
-        # compute iou
-        iou = inter / union
-        return iou
+        return inter / union
 
     def encode_box(self, box, return_iou=True):
         """Encode box for training, do it only for assigned priors.
@@ -286,10 +284,7 @@ class Normalize(Layer):
         Add possibility to have one scale for all features.
     """
     def __init__(self, scale, **kwargs):
-        if K.image_dim_ordering() == 'tf':
-            self.axis = 3
-        else:
-            self.axis = 1
+        self.axis = 3 if K.image_dim_ordering() == 'tf' else 1
         self.scale = scale
         super(Normalize, self).__init__(**kwargs)
 
@@ -297,7 +292,7 @@ class Normalize(Layer):
         self.input_spec = [InputSpec(shape=input_shape)]
         shape = (input_shape[self.axis],)
         init_gamma = self.scale * np.ones(shape)
-        self.gamma = K.variable(init_gamma, name='{}_gamma'.format(self.name))
+        self.gamma = K.variable(init_gamma, name=f'{self.name}_gamma')
         self.trainable_weights = [self.gamma]
 
     def call(self, x, mask=None):
@@ -385,7 +380,7 @@ class PriorBox(Layer):
         box_widths = []
         box_heights = []
         for ar in self.aspect_ratios:
-            if ar == 1 and len(box_widths) == 0:
+            if ar == 1 and not box_widths:
                 box_widths.append(self.min_size)
                 box_heights.append(self.min_size)
             elif ar == 1 and len(box_widths) > 0:
@@ -432,9 +427,6 @@ class PriorBox(Layer):
         if K.backend() == 'tensorflow':
             pattern = [tf.shape(x)[0], 1, 1]
             prior_boxes_tensor = tf.tile(prior_boxes_tensor, pattern)
-        elif K.backend() == 'theano':
-            #TODO
-            pass
         return prior_boxes_tensor
 
 
@@ -449,11 +441,10 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     # References
         https://arxiv.org/abs/1512.02325
     """
-    net = {}
     # Block 1
     input_tensor = input_tensor = Input(shape=input_shape)
     img_size = (input_shape[1], input_shape[0])
-    net['input'] = input_tensor
+    net = {'input': input_tensor}
     net['conv1_1'] = Convolution2D(64, 3, 3,
                                    activation='relu',
                                    border_mode='same',
@@ -563,7 +554,7 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     net['conv4_3_norm_mbox_loc_flat'] = flatten(net['conv4_3_norm_mbox_loc'])
     name = 'conv4_3_norm_mbox_conf'
     if num_classes != 21:
-        name += '_{}'.format(num_classes)
+        name += f'_{num_classes}'
     x = Convolution2D(num_priors * num_classes, 3, 3, border_mode='same',
                       name=name)(net['conv4_3_norm'])
     net['conv4_3_norm_mbox_conf'] = x
@@ -582,7 +573,7 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     net['fc7_mbox_loc_flat'] = flatten(net['fc7_mbox_loc'])
     name = 'fc7_mbox_conf'
     if num_classes != 21:
-        name += '_{}'.format(num_classes)
+        name += f'_{num_classes}'
     net['fc7_mbox_conf'] = Convolution2D(num_priors * num_classes, 3, 3,
                                          border_mode='same',
                                          name=name)(net['fc7'])
@@ -601,7 +592,7 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     net['conv6_2_mbox_loc_flat'] = flatten(net['conv6_2_mbox_loc'])
     name = 'conv6_2_mbox_conf'
     if num_classes != 21:
-        name += '_{}'.format(num_classes)
+        name += f'_{num_classes}'
     x = Convolution2D(num_priors * num_classes, 3, 3, border_mode='same',
                       name=name)(net['conv6_2'])
     net['conv6_2_mbox_conf'] = x
@@ -620,7 +611,7 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     net['conv7_2_mbox_loc_flat'] = flatten(net['conv7_2_mbox_loc'])
     name = 'conv7_2_mbox_conf'
     if num_classes != 21:
-        name += '_{}'.format(num_classes)
+        name += f'_{num_classes}'
     x = Convolution2D(num_priors * num_classes, 3, 3, border_mode='same',
                       name=name)(net['conv7_2'])
     net['conv7_2_mbox_conf'] = x
@@ -639,7 +630,7 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     net['conv8_2_mbox_loc_flat'] = flatten(net['conv8_2_mbox_loc'])
     name = 'conv8_2_mbox_conf'
     if num_classes != 21:
-        name += '_{}'.format(num_classes)
+        name += f'_{num_classes}'
     x = Convolution2D(num_priors * num_classes, 3, 3, border_mode='same',
                       name=name)(net['conv8_2'])
     net['conv8_2_mbox_conf'] = x
@@ -655,16 +646,13 @@ def SSD300(input_shape, num_classes=21, pretrained=True):
     net['pool6_mbox_loc_flat'] = x
     name = 'pool6_mbox_conf_flat'
     if num_classes != 21:
-        name += '_{}'.format(num_classes)
+        name += f'_{num_classes}'
     x = Dense(num_priors * num_classes, name=name)(net['pool6'])
     net['pool6_mbox_conf_flat'] = x
     priorbox = PriorBox(img_size, 276.0, max_size=330.0, aspect_ratios=[2, 3],
                         variances=[0.1, 0.1, 0.2, 0.2],
                         name='pool6_mbox_priorbox')
-    if K.image_dim_ordering() == 'tf':
-        target_shape = (1, 1, 256)
-    else:
-        target_shape = (256, 1, 1)
+    target_shape = (1, 1, 256) if K.image_dim_ordering() == 'tf' else (256, 1, 1)
     net['pool6_reshaped'] = Reshape(target_shape,
                                     name='pool6_reshaped')(net['pool6'])
     net['pool6_mbox_priorbox'] = priorbox(net['pool6_reshaped'])
@@ -739,9 +727,8 @@ def process_frame_bgr_with_SSD(frame_bgr, ssd_model, bbox_helper, allow_classes=
     """
     frame_bgr = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
 
-    inputs = []
     img = image.img_to_array(cv2.resize(frame_bgr, (300, 300)))
-    inputs.append(img.copy())
+    inputs = [img.copy()]
     inputs = preprocess_input(np.array(inputs))
     preds = ssd_model.predict(inputs, batch_size=1, verbose=1)
     results = bbox_helper.detection_out(preds, confidence_threshold=min_confidence)
@@ -815,9 +802,6 @@ def get_SSD_model():
     return model_ssd, bbox_helper, colors_converted
 
 
-if __name__ == '__main__':
-
-    pass
 
 
 
